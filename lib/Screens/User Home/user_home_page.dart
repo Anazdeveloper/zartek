@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,8 +6,11 @@ import 'package:zartek/Screens/CheckoutScreen/checkout_page.dart';
 import 'package:zartek/Screens/User%20Home/user_home_bloc.dart';
 import 'package:zartek/UiComponents/dish_detail_cell.dart';
 import 'package:zartek/UiComponents/progress.dart';
+import 'package:zartek/UiComponents/side_drawer.dart';
 
 class UserHomePage extends StatefulWidget {
+  final User? user;
+  UserHomePage(this.user);
   @override
   State<StatefulWidget> createState() {
     return UserHomePageState();
@@ -19,9 +23,11 @@ class UserHomePageState extends State<UserHomePage> {
   bool toCart = false;
   //List<String> ? dishNames;
 
+
+
   @override
   Widget build(BuildContext context) {
-
+    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
     final blocprovider = BlocProvider.of<UserHomeBloc>(context);
     if(!isEnabled) blocprovider.add(UserHomeUiLoadedEvent());
     return SafeArea(
@@ -30,11 +36,15 @@ class UserHomePageState extends State<UserHomePage> {
           builder: (context, state) {
             if(state is UserHomeUiLoadedState) {
               return Scaffold(
+                key: _scaffoldKey,
+                drawer: SideDrawer(widget.user!),
                 appBar: AppBar(
                   elevation: 5.0,
                   backgroundColor: Colors.white,
                   leading: IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      _scaffoldKey.currentState!.openDrawer();
+                    },
                     icon: Icon(
                       Icons.menu,
                       color: Colors.grey[700],
@@ -46,16 +56,7 @@ class UserHomePageState extends State<UserHomePage> {
                       children: [
                         IconButton(
                             onPressed: () {
-                              // for(var i = 0; i <= state.categoryDishes!.length; i++) {
-                              //   if(state.categoryDishes![i].stepperValue > 0) {
-                              //     dishNames!.add(state.categoryDishes![i].dishName!);
-                              //   }
-                              // }
-                              //print(dishNames!.length);
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => CheckoutPage(state.categoryDishes,counter)));
-                              // setState(() {
-                              //   toCart = true;
-                              // });
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => CheckoutPage(state.categoryDishes,counter,widget.user)));
                             },
                             // ignore: unnecessary_new
                             icon: Icon(

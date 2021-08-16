@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,8 +9,9 @@ import 'package:zartek/Screens/User%20Home/user_home_page.dart';
 class CheckoutPage extends StatefulWidget {
   final List<CategoryDishes>? dishes;
   final int? items;
+  final User? user;
 
-  CheckoutPage(this.dishes, this.items);
+  CheckoutPage(this.dishes, this.items, this.user);
 
   @override
   State<StatefulWidget> createState() {
@@ -316,7 +318,7 @@ class CheckoutPageState extends State<CheckoutPage> {
                               MaterialPageRoute(
                                 builder: (context) => BlocProvider(
                                   create: (context) => UserHomeBloc(),
-                                  child: UserHomePage(),
+                                  child: UserHomePage(widget.user),
                                 ),
                               ));
                         },

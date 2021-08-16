@@ -6,7 +6,7 @@ class Progress extends StatelessWidget {
   Widget build(BuildContext context) {
     return Theme(
       data: ThemeData(
-        accentColor: Colors.cyan[700],
+        accentColor: Colors.orangeAccent,
       ),
       child: Center(
         child: Container(
