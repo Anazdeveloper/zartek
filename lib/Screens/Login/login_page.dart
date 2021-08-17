@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:zartek/Screens/User%20Home/user_home_bloc.dart';
 import 'package:zartek/Screens/User%20Home/user_home_page.dart';
 import 'package:zartek/Services/authentication.dart';
@@ -16,7 +16,107 @@ class LoginPage extends StatefulWidget {
 }
 
 class LoginPageState extends State<LoginPage> {
-  bool _isSigningIn = false;
+  bool _isPhone = true;
+  TextEditingController phoneController = TextEditingController();
+  TextEditingController codeController = TextEditingController();
+
+  Future phoneLoginUser(String mobile, BuildContext context) async{
+
+    FirebaseAuth _auth = FirebaseAuth.instance;
+
+    _auth.verifyPhoneNumber(
+        phoneNumber: mobile,
+        timeout: Duration(seconds: 60),
+        verificationCompleted: (AuthCredential credential) async {
+          
+          Navigator.of(context).pop();
+          
+          UserCredential result = await _auth.signInWithCredential(credential);
+          User? user = result.user;
+
+          if(user != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => BlocProvider(create: (context) => UserHomeBloc(),child: UserHomePage(result.user, _isPhone),))
+            );
+          } else {
+            print('Error');
+          }
+        },
+        verificationFailed: (exception) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text(
+                  exception.toString(),
+                  style: TextStyle(
+                    color: Colors.black
+                  ),
+                )
+            )
+          );
+        },
+        codeSent: (String verificationId, int? forceResendingToken) {
+          showDialog(
+              context: context,
+            barrierDismissible: true,
+            builder: (context) {
+                return AlertDialog(
+                  title: Text(
+                    'Give your code?',
+                  ),
+                  content: Column(
+                    children: [
+                      TextField(
+                        controller: codeController,
+                      )
+                    ],
+                  ),
+                  actions: [
+                    ElevatedButton(
+                        style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all<Color>(Colors.green)
+                        ),
+                        onPressed: () async {
+                          final code = codeController.text.trim();
+                          AuthCredential credential = PhoneAuthProvider.credential(
+                              verificationId: verificationId,
+                              smsCode: code
+                          );
+
+                         UserCredential result = await _auth.signInWithCredential(credential);
+                         User? user = result.user;
+
+                         if(user != null) {
+                           Navigator.push(
+                               context,
+                               MaterialPageRoute(
+                                   builder: (context) => BlocProvider(create: (context) => UserHomeBloc(),child: UserHomePage(result.user, _isPhone),))
+                           );
+                         } else {
+                           print('Error');
+                         }
+                        },
+                        child: const Text(
+                          'Confirm',
+                          style: TextStyle(
+                            color: Colors.white
+                          ),
+                        ))
+                  ],
+
+                );
+            }
+          );
+        },
+        codeAutoRetrievalTimeout: (String verificationId){
+          verificationId = verificationId;
+          print(verificationId);
+          print("Timout");
+        }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -40,7 +140,7 @@ class LoginPageState extends State<LoginPage> {
                 future: Authentication.initializeFirebase(context: context),
                 builder: (context, snapshot) {
                   if(snapshot.hasError) {
-                    return Text('Error initializing firebase');
+                    return const Text('Error initializing firebase');
                   } else if(snapshot.connectionState == ConnectionState.done) {
                     return ElevatedButton(
                       style: ButtonStyle(
@@ -54,6 +154,7 @@ class LoginPageState extends State<LoginPage> {
                       onPressed: () async {
                         User? user = await Authentication.signInWithGoogle(context: context);
                         if(user != null) {
+                          _isPhone = false;
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content:
                             Text(
@@ -64,7 +165,7 @@ class LoginPageState extends State<LoginPage> {
                             ),
                             ),
                           );
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => BlocProvider(create: (context) => UserHomeBloc(),child: UserHomePage(user),), ));
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => BlocProvider(create: (context) => UserHomeBloc(),child: UserHomePage(user, _isPhone),), ));
                         }
                       },
                       child: Stack(
@@ -111,7 +212,42 @@ class LoginPageState extends State<LoginPage> {
                         )
                     )
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (context){
+                        return AlertDialog(
+                          title: const Text('Enter the phone number'),
+                          content: Container(
+                            height: MediaQuery.of(context).size.height * 0.25,
+                            child: Column(
+                              children: [
+                                TextField(
+                                  controller: phoneController,
+                                  keyboardType: TextInputType.phone,
+                                ),
+                                ElevatedButton(
+                                  style: ButtonStyle(
+                                      backgroundColor: MaterialStateProperty.all<Color>(Colors.green)
+                                  ),
+                                  onPressed: () {
+                                    final phone = phoneController.text.trim();
+                                    phoneLoginUser(phone, context);
+                                  },
+                                  child: const Text(
+                                    'Send OTP',
+                                    style: TextStyle(
+                                      color: Colors.white
+                                    ),
+                                  ),
+
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      });
+                },
                 child: Stack(
                   children: [
                     Container(
@@ -141,5 +277,4 @@ class LoginPageState extends State<LoginPage> {
       ),
     );
   }
-
 }

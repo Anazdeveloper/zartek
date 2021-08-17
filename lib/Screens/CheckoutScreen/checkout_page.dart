@@ -10,8 +10,9 @@ class CheckoutPage extends StatefulWidget {
   final List<CategoryDishes>? dishes;
   final int? items;
   final User? user;
+  final bool _isPhone;
 
-  CheckoutPage(this.dishes, this.items, this.user);
+  CheckoutPage(this.dishes, this.items, this.user, this._isPhone);
 
   @override
   State<StatefulWidget> createState() {
@@ -318,7 +319,7 @@ class CheckoutPageState extends State<CheckoutPage> {
                               MaterialPageRoute(
                                 builder: (context) => BlocProvider(
                                   create: (context) => UserHomeBloc(),
-                                  child: UserHomePage(widget.user),
+                                  child: UserHomePage(widget.user, widget._isPhone),
                                 ),
                               ));
                         },

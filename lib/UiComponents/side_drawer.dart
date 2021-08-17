@@ -6,8 +6,9 @@ import 'package:zartek/Services/authentication.dart';
 
 class SideDrawer extends StatelessWidget {
   User user;
+  bool _isPhone;
 
-  SideDrawer(this.user);
+  SideDrawer(this.user, this._isPhone);
   @override
   Widget build(BuildContext context) {
    return Drawer(
@@ -25,7 +26,7 @@ class SideDrawer extends StatelessWidget {
                  Container(
                    padding: const EdgeInsets.only(bottom: 20.0),
                    child: Text(
-                     user.displayName!,
+                     _isPhone ? user.phoneNumber! : user.displayName!,
                      style: const TextStyle(
                        color: Colors.black,
                        fontSize: 20.0

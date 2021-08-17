@@ -10,7 +10,8 @@ import 'package:zartek/UiComponents/side_drawer.dart';
 
 class UserHomePage extends StatefulWidget {
   final User? user;
-  UserHomePage(this.user);
+  final bool _isPhone;
+  UserHomePage(this.user, this._isPhone);
   @override
   State<StatefulWidget> createState() {
     return UserHomePageState();
@@ -37,7 +38,7 @@ class UserHomePageState extends State<UserHomePage> {
             if(state is UserHomeUiLoadedState) {
               return Scaffold(
                 key: _scaffoldKey,
-                drawer: SideDrawer(widget.user!),
+                drawer: SideDrawer(widget.user!,widget._isPhone),
                 appBar: AppBar(
                   elevation: 5.0,
                   backgroundColor: Colors.white,
@@ -56,7 +57,7 @@ class UserHomePageState extends State<UserHomePage> {
                       children: [
                         IconButton(
                             onPressed: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => CheckoutPage(state.categoryDishes,counter,widget.user)));
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => CheckoutPage(state.categoryDishes,counter,widget.user,widget._isPhone)));
                             },
                             // ignore: unnecessary_new
                             icon: Icon(
